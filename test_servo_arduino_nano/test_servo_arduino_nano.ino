@@ -27,12 +27,12 @@ void loop()
 { 
 
   val_x = analogRead(potpin_x);        // reads the value of the potentiometer (value between 0 and 1023) 
-  val_x = map(val_x, 0, 1023, 0, 179);   // scale it to use it with the servo (value between 0 and 180) 
+  val_x = map(val_x, 1023, 0, 0, 179);   // scale it to use it with the servo (value between 0 and 180) 
   myservo_x.write(val_x);             // sets the servo position according to the scaled value 
 //  delay(15);                    // waits for the servo to get there 
 
     val_y = analogRead(potpin_y);        // reads the value of the potentiometer (value between 0 and 1023) 
-  val_y = map(val_y, 0, 1023, 0, 179);   // scale it to use it with the servo (value between 0 and 180) 
+  val_y = map(val_y, 1023, 0, 0, 179);   // scale it to use it with the servo (value between 0 and 180) 
   myservo_y.write(val_y);             // sets the servo position according to the scaled value 
  // delay(15);                    // waits for the servo to get there 
 
