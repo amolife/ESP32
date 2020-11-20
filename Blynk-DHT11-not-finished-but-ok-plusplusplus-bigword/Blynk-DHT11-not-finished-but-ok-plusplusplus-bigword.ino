@@ -83,7 +83,7 @@ BlynkTimer timer1;
 // In the app, Widget's reading frequency should be set to PUSH. This means
 // that you define how often to send data to Blynk App.
 void sendSensor()
-{
+{ 
   float h = dht.readHumidity();
   float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
 
@@ -109,36 +109,36 @@ void sendSensor()
   //--------------utc----------------------//  
 
   
-  u8g2.setFont(u8g2_font_wqy12_t_gb2312a);
+  u8g2.setFont(u8g2_font_wqy16_t_gb2312a);
   
-  u8g2.setCursor(0, 20);
+ // u8g2.setCursor(0, 25);
 //  u8g2.print(payload.substring(173,193));
-  u8g2.print("北京:");
-  u8g2.setCursor(33, 20);
+//  u8g2.print("北京:");
+  u8g2.setCursor(0, 32);
   u8g2.print(Xinzhi_wenzi);
-  u8g2.setCursor(65, 20);
-  u8g2.print("室外:");
-  u8g2.setCursor(113, 20);
+ // u8g2.setCursor(65, 25);
+//  u8g2.print("室外:");
+  u8g2.setCursor(102, 32);
   u8g2.print("°C");
 
-  u8g2.setCursor(0, 43);
-  u8g2.print("温:");
-  u8g2.setCursor(48, 43);
+//  u8g2.setCursor(0, 55);
+//  u8g2.print("温:");
+  u8g2.setCursor(46, 62);
   u8g2.print("°C");
-  u8g2.setCursor(65, 43);
-  u8g2.print("湿:");
-  u8g2.setCursor(113, 43);
+//  u8g2.setCursor(69, 55);
+//  u8g2.print("湿:");
+  u8g2.setCursor(120, 62);
   u8g2.print("%");
 
-  u8g2.setCursor(0, 61);//设置文字显示位置
-  u8g2.print(&timeinfo, "%Y.%m.%d %a %H:%M");//Ali NTP date and time
+//  u8g2.setCursor(0, 61);//设置文字显示位置
+//  u8g2.print(&timeinfo, "%Y.%m.%d %a %H:%M");//Ali NTP date and time
 //-----------------------------data------------------------
-  u8g2.setFont(u8g2_font_wqy16_t_gb2312a);
-  u8g2.setCursor(98, 20);
+  u8g2.setFont(u8g2_font_courB14_tf);
+  u8g2.setCursor(80, 32);
   u8g2.print(Xinzhi_wendu);
-  u8g2.setCursor(20, 43);
+  u8g2.setCursor(0,62);
   u8g2.print(t,1);   // 0.00 to 0.0
-  u8g2.setCursor(85, 43);
+  u8g2.setCursor(74, 62);
   u8g2.print(h,1);   // 0.00 to 0.0
 //-----------------------------data------------------------
   u8g2.sendBuffer();
@@ -258,6 +258,9 @@ void arduino_json(){
 void setup()
 {
   // Debug console
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);   // turn the LED on (HIGH is the voltage level)
+//  delay(1000);   
   Serial.begin(9600);
   dht.begin();
   // Setup a function to be called every second
