@@ -35,12 +35,19 @@ int     mode     = 0;    // Currently-active animation mode, 0-9
 
 void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(35, INPUT);
   strip.begin(); // Initialize NeoPixel strip object (REQUIRED)
   strip.show();  // Initialize all pixels to 'off'
   strip.setBrightness(10); // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
 void loop() {
+
+            blinkStar_random(5);    //
+            
+  int analog_value = analogRead(35);
+  int brightness = map(analog_value, 0, 1023, 10, 255);
+  strip.setBrightness(brightness);
   // Get current button state.
   boolean newState = digitalRead(BUTTON_PIN);
 
@@ -63,7 +70,7 @@ void loop() {
           colorWipe(strip.Color(  0, 255,   0), 50);    // Green
           break;
         case 3:
-          colorWipe(strip.Color(  0,   0, 255), 50);    // Blue
+          blinkStar(strip.Color(  255,   255, 255), 5);    //
           break;
         case 4:
           theaterChase(strip.Color(127, 127, 127), 50); // White
@@ -87,6 +94,55 @@ void loop() {
   // Set the last-read button state to the old state.
   oldState = newState;
 }
+
+
+void blinkStar(uint32_t color, int wait) {
+  for(int j=0; j<strip.numPixels(); j++){
+      for(int i=0; i<255; i++) {
+        strip.setPixelColor(j, color); 
+        strip.setBrightness(i);
+        strip.show(); 
+        delay(wait); 
+      }
+      for(int i=255; i>-1; i--) {
+        strip.setPixelColor(j, color); 
+        strip.setBrightness(i);
+        strip.show(); 
+        delay(wait); 
+      }
+      delay(1000);
+  }
+}
+
+
+void blinkStar_random(int wait) {
+  for(int j=0; j<strip.numPixels(); j++){
+    int randomR = random(255);
+    int randomG = random(255);
+    int randomB = random(255);
+    
+      for(int i=0; i<255; i++) {
+        strip.setPixelColor(j, strip.Color(randomR, randomG, randomB)); 
+        strip.setBrightness(i);
+        strip.show(); 
+        delay(wait); 
+      }
+      for(int i=255; i>-1; i--) {
+        strip.setPixelColor(j, strip.Color(randomR, randomG, randomB)); 
+        strip.setBrightness(i);
+        strip.show(); 
+        delay(wait); 
+      }
+      delay(1000);
+  }
+}
+
+
+
+
+
+
+
 
 // Fill strip pixels one after another with a color. Strip is NOT cleared
 // first; anything there will be covered pixel by pixel. Pass in color
