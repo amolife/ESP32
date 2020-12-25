@@ -89,7 +89,7 @@ void sendSensor()
 
   if (isnan(h) || isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
-    return;
+    //return;    //应该解决了DHT11煞笔以后，系统异常问题
   }
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
