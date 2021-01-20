@@ -30,7 +30,7 @@ char setting[7];//远程 本地 显示
 //https://blog.csdn.net/weixin_41866783/article/details/109292153
 #define Mud1   34
 #define Mud2   35
-#define Mud3   36
+#define Mud3   32
 int Mud1_value;
 int Mud2_value;
 int Mud3_value;
