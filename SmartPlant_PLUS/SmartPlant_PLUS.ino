@@ -18,7 +18,7 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include <Wire.h> 
-char auth[] = "CcEGm3vk876OHzFWlABK9knBB0WH1eOa";
+char auth[] = "n_wxy_ZAYHSP8na1Qw0l3DjORToBIvhn";
 char ssid[] = "CMCC-Stone";
 char pass[] = "shiyongqian";
 int BH1750address = 0x23;
@@ -36,8 +36,10 @@ int Mud2_value;
 int Mud3_value;
 //电容式V2.0的据网上说空气中560左右，水中310左右的读数,实际校准下实施
 //https://blog.csdn.net/weixin_41866783/article/details/109292153
-int lowlimit = 310;
-int highlimit = 560;
+int lowlimit = 200;
+int highlimit = 700;
+//int lowlimit = 310;
+//int highlimit = 560;
 const int sampleCount = 10;
 //int raw = 0; 
 // How many NeoPixels are attached to the Arduino?
@@ -64,7 +66,7 @@ BlynkTimer timer;
 void setup() {
   Serial.begin(115200);
   Blynk.begin(auth, ssid, pass);
-  timer.setInterval(10000L, GetSensorAndToDo);
+  timer.setInterval(5000L, GetSensorAndToDo);
   pinMode(relayPin, OUTPUT);
   pinMode(Mud1, INPUT);
   pinMode(Mud2, INPUT);
@@ -101,9 +103,10 @@ int MoisureDataClean(int raw_pin) {
   int sum = 0;
   int val = 0;
   int raw = 0;
+       Serial.printf("..............RawPin(%d)!...............:\n",raw_pin);
   for (int i=0; i < sampleCount; i++) {
     val = analogRead(raw_pin);
-    Serial.print("Sample Moisture Sensor Value:");
+    Serial.printf("Sample Moisture Sensor Value(%d):",i);
     Serial.print(val);
     Serial.print("\n");
     sum += val;
@@ -226,9 +229,13 @@ void GetSensorAndToDo()
 //  Serial.printf("MudSensor2 Raw=%d\n",Mud2_value);
 //  Serial.printf("MudSensor3 Raw=%d\n",Mud3_value);
 //  delay(10);
+
   Mud1_value =MoisureDataClean(Mud1);  //取平均值，清理数据，排除传感器故障情况，并map到0-100
+  delay(100);
   Mud2_value =MoisureDataClean(Mud2);
+    delay(100);
   Mud3_value =MoisureDataClean(Mud3);
+    delay(100);
 if(remote == 0){
   if (Mud1_value > 75 && Mud2_value > 75 && Mud3_value >75)  //三个都太干了 
     {
@@ -236,12 +243,12 @@ if(remote == 0){
       Serial.println("All sensor are too try, so Pump Run!...............");
       delay(5000);
       digitalWrite(relayPin, LOW);
-      Serial.println("Pump Stopped!");
+      Serial.println("Planting finished, Pump Stopped!");
      }
   else if (Mud1_value < 30 || Mud2_value < 30 || Mud3_value < 30) //有一个太湿了
     {
       digitalWrite(relayPin, LOW);
-      Serial.println("One of three sensor is wet so Pump  Stop!");
+      Serial.println("One of three sensor is wet so Pump  No need to start pump, wait wait!");
     }
 }
   h = dht.readHumidity();
@@ -263,7 +270,7 @@ if(remote == 0){
 
   //u8g2.clearBuffer();
   strcpy(str, u8x8_u16toa(val, 5));  
-
+    Serial.println(str);
   u8g2.firstPage();
   do {
   u8g2.setCursor(0, 16);
@@ -282,4 +289,7 @@ if(remote == 0){
     u8g2.drawStr(95, 48, "Lx");
     u8g2.setContrast(255 - map(val, 0, 500, 0, 255)); //将光照数据进行区间映射，控制OLED背光
   } while ( u8g2.nextPage() );
+
+      Serial.printf("远程开泵=%d\n",incomedate);
+            Serial.printf("远程模式或本地模式=%d\n",remote);
 }
