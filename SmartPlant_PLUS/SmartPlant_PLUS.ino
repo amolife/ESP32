@@ -101,15 +101,15 @@ void loop() {
 //********************************
 int MoisureDataClean(int raw_pin) {
   int sum = 0;
-  int val = 0;
+  int value1 = 0;
   int raw = 0;
        Serial.printf("..............RawPin(%d)!...............:\n",raw_pin);
   for (int i=0; i < sampleCount; i++) {
-    val = analogRead(raw_pin);
+    value1 = analogRead(raw_pin);
     Serial.printf("Sample Moisture Sensor Value(%d):",i);
-    Serial.print(val);
+    Serial.print(value1);
     Serial.print("\n");
-    sum += val;
+    sum += value1;
   }
   raw = sum / sampleCount;
   //电容式的据网上说空气中560左右，水中310左右的读数
@@ -273,10 +273,60 @@ if(remote == 0){
     Serial.println(str);
   u8g2.firstPage();
   do {
-  u8g2.setCursor(0, 16);
-  u8g2.print(t);
-  u8g2.setCursor(15, 16);
+//-------------line1--------------   
+  u8g2.setCursor(0, 13);
+  u8g2.print("土壤:");
+  u8g2.setCursor(35, 13);
+//  u8g2.print("①:");
+//  u8g2.setCursor(40, 13);
+  u8g2.print(Mud1_value);   
+  u8g2.setCursor(55, 13);
+  u8g2.print("%");
+  u8g2.setCursor(70, 13);
+//  u8g2.print("②:");
+//  u8g2.setCursor(80, 13);
+  u8g2.print(Mud2_value);   
+  u8g2.setCursor(85, 13);
+  u8g2.print("%");
+  u8g2.setCursor(100, 13);
+//  u8g2.print("③:");
+//  u8g2.setCursor(120, 13);
+  u8g2.print(Mud3_value);   
+  u8g2.setCursor(115, 13);
+  u8g2.print("%");
+//-------------line2--------------
+  u8g2.setCursor(0, 29);
+  u8g2.print("温:");
+  u8g2.setCursor(20, 29);
+  u8g2.print(t,1);   // 0.00 to 0.0
+  u8g2.setCursor(48, 29);
   u8g2.print("°C");
+  u8g2.setCursor(65, 29);
+  u8g2.print("湿:");
+  u8g2.setCursor(85, 29);
+  u8g2.print(h,1);   // 0.00 to 0.0
+  u8g2.setCursor(113, 29);
+  u8g2.print("%");
+//-------------line3--------------
+  u8g2.setCursor(0, 45);
+  u8g2.print("光照:");
+  u8g2.setCursor(40, 45);
+  u8g2.print(val);   
+  u8g2.setCursor(80, 45);
+  u8g2.print("Lux");
+  u8g2.setCursor(100, 45);
+  u8g2.print(remote);
+  u8g2.setCursor(110, 45);
+  u8g2.print(incomedate);
+//-------------line4--------------
+  u8g2.setCursor(0, 61);
+  u8g2.print("IP地址:");
+  u8g2.setCursor(40, 61);
+  u8g2.print(WiFi.localIP());
+//  u8g2.sendBuffer();
+     
+  u8g2.setContrast(255 - map(val, 0, 65535, 0, 255)); //将光照数据进行区间映射，控制OLED背光
+     
 //    u8g2.drawStr(0, 16, t);
 //    u8g2.drawStr(20, 16, "℃");
 //    u8g2.drawStr(40, 16, h);
@@ -285,11 +335,11 @@ if(remote == 0){
 //    u8g2.drawStr(0, 32, Mud1_value);
 //    u8g2.drawStr(30, 32, Mud2_value);
 //    u8g2.drawStr(60, 32, Mud3_value);
-    u8g2.drawStr(10, 48, str);
-    u8g2.drawStr(95, 48, "Lx");
-    u8g2.setContrast(255 - map(val, 0, 500, 0, 255)); //将光照数据进行区间映射，控制OLED背光
+     //u8g2.drawStr(10, 48, str);
+    //u8g2.drawStr(95, 48, "Lx");
+
   } while ( u8g2.nextPage() );
 
-      Serial.printf("远程开泵=%d\n",incomedate);
-            Serial.printf("远程模式或本地模式=%d\n",remote);
+   Serial.printf("远程开泵=%d\n",incomedate);
+   Serial.printf("远程模式或本地模式=%d\n",remote);
 }
