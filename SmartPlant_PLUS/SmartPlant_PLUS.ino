@@ -36,8 +36,8 @@ int Mud2_value;
 int Mud3_value;
 //电容式V2.0的据网上说空气中560左右，水中310左右的读数,实际校准下实施
 //https://blog.csdn.net/weixin_41866783/article/details/109292153
-int lowlimit = 200;
-int highlimit = 700;
+int lowlimit = 1250;
+int highlimit = 3650;
 //int lowlimit = 310;
 //int highlimit = 560;
 const int sampleCount = 10;
@@ -106,6 +106,7 @@ int MoisureDataClean(int raw_pin) {
        Serial.printf("..............RawPin(%d)!...............:\n",raw_pin);
   for (int i=0; i < sampleCount; i++) {
     value1 = analogRead(raw_pin);
+    delay(1);
     Serial.printf("Sample Moisture Sensor Value(%d):",i);
     Serial.print(value1);
     Serial.print("\n");
@@ -114,12 +115,12 @@ int MoisureDataClean(int raw_pin) {
   raw = sum / sampleCount;
   //电容式的据网上说空气中560左右，水中310左右的读数
   //https://blog.csdn.net/weixin_41866783/article/details/109292153
-  if (raw >= 700) {
-    Serial.println("数据异常！平均值超过700了，传感器故障");
+  if (raw >= highlimit) {
+    Serial.println("数据异常！平均值超过3600了，传感器故障");
     return NULL;
   }
-  if (raw <= 200) {
-    Serial.println("数据异常！平均值低于200了，传感器故障");
+  if (raw <= lowlimit) {
+    Serial.println("数据异常！平均值低于1250了，传感器故障");
     return NULL;
   } else {
     raw = map(raw, lowlimit, highlimit, 0, 100);
@@ -312,7 +313,7 @@ if(remote == 0){
   u8g2.print("光照:");
   u8g2.setCursor(40, 45);
   u8g2.print(val);   
-  u8g2.setCursor(80, 45);
+  u8g2.setCursor(70, 45);
   u8g2.print("Lux");
   u8g2.setCursor(100, 45);
   u8g2.print(remote);
