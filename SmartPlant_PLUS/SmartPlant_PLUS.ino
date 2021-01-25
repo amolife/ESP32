@@ -36,8 +36,8 @@ int Mud2_value;
 int Mud3_value;
 //电容式V2.0的据网上说空气中560左右，水中310左右的读数,实际校准下实施
 //https://blog.csdn.net/weixin_41866783/article/details/109292153
-int lowlimit = 1250;
-int highlimit = 3650;
+int lowlimit = 1200;
+int highlimit = 3800;
 //int lowlimit = 310;
 //int highlimit = 560;
 const int sampleCount = 10;
@@ -54,6 +54,16 @@ int remote = 0;
 //本地 远程
 int incomedate = 0;
 int relayPin = 13;
+
+int duration = 20; //假设多少秒，，以后改为小时
+
+
+//bool  isWatered = false;    //一段时间内最多浇一次水,防止因为传感器损坏而过浇
+//long  waterInerval = 43200000; //正常浇水时间间隔 12*60*60*1000
+//long  safeWaterInterval = 86400000;  //安全浇水时间间隔,默认一天最多浇一次水 24*60*60*1000
+
+
+
 //继电器引脚
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, 
 /* reset=*/
@@ -66,7 +76,8 @@ BlynkTimer timer;
 void setup() {
   Serial.begin(115200);
   Blynk.begin(auth, ssid, pass);
-  timer.setInterval(5000L, GetSensorAndToDo);
+  timer.setInterval((long)duration*1000, PumpToDo);
+  timer.setInterval(5000L, UpdateData);
   pinMode(relayPin, OUTPUT);
   pinMode(Mud1, INPUT);
   pinMode(Mud2, INPUT);
@@ -107,23 +118,28 @@ int MoisureDataClean(int raw_pin) {
   for (int i=0; i < sampleCount; i++) {
     value1 = analogRead(raw_pin);
     delay(1);
-    Serial.printf("Sample Moisture Sensor Value(%d):",i);
+    Serial.printf("#(%d):",i);
     Serial.print(value1);
-    Serial.print("\n");
+   // Serial.print("\n");
     sum += value1;
   }
   raw = sum / sampleCount;
   //电容式的据网上说空气中560左右，水中310左右的读数
   //https://blog.csdn.net/weixin_41866783/article/details/109292153
   if (raw >= highlimit) {
+     Serial.print("\n");
     Serial.println("数据异常！平均值超过3600了，传感器故障");
+     Serial.print(raw);
     return NULL;
   }
   if (raw <= lowlimit) {
+     Serial.print("\n");
     Serial.println("数据异常！平均值低于1250了，传感器故障");
+         Serial.print(raw);
     return NULL;
   } else {
-    raw = map(raw, lowlimit, highlimit, 0, 100);
+    raw = map(raw, highlimit, lowlimit, 0, 100);
+     Serial.print("\n");
     Serial.printf("MudValueCleanTo_0_100=%d\n",raw);
     return raw;}
 
@@ -172,6 +188,23 @@ void rainbow(int wait) {    //彩虹圈
     delay(wait);  // Pause for a moment
   }
 }
+
+
+BLYNK_WRITE(V20) // 时间间隔设定
+{
+duration = param.asInt(); 
+
+
+}
+
+
+//void changeFlag(){
+//  isWatered = false;  
+//}
+//void SetTimer(){
+//       timer.setInterval((long)duration*1000, PumpToDo);
+//}
+
 //********************************
 BLYNK_WRITE(V0) //远程就地切换
 {
@@ -217,7 +250,7 @@ BLYNK_WRITE(V1) //远程启动停止水泵
 //    }
 
 //********************************
-void GetSensorAndToDo()
+void PumpToDo()
 {
 //  Mud1_value = analogRead(Mud1);
 //  delay(10);
@@ -232,26 +265,57 @@ void GetSensorAndToDo()
 //  delay(10);
 
   Mud1_value =MoisureDataClean(Mud1);  //取平均值，清理数据，排除传感器故障情况，并map到0-100
-  delay(100);
+  delay(10);
   Mud2_value =MoisureDataClean(Mud2);
-    delay(100);
+  delay(10);
   Mud3_value =MoisureDataClean(Mud3);
-    delay(100);
+  delay(10);
+
 if(remote == 0){
-  if (Mud1_value > 75 && Mud2_value > 75 && Mud3_value >75)  //三个都太干了 
+  if (Mud1_value < 30 && Mud2_value < 30 && Mud3_value < 30)  //三个都太干了 
     {
       digitalWrite(relayPin, HIGH);
       Serial.println("All sensor are too try, so Pump Run!...............");
       delay(5000);
       digitalWrite(relayPin, LOW);
       Serial.println("Planting finished, Pump Stopped!");
+
+
      }
-  else if (Mud1_value < 30 || Mud2_value < 30 || Mud3_value < 30) //有一个太湿了
+  else if (Mud1_value > 75 || Mud2_value > 75 || Mud3_value >75) //有一个太湿了
     {
       digitalWrite(relayPin, LOW);
       Serial.println("One of three sensor is wet so Pump  No need to start pump, wait wait!");
     }
+  
+
 }
+   
+}
+
+
+
+
+void UpdateData()
+{
+
+  Mud1_value =MoisureDataClean(Mud1);  //取平均值，清理数据，排除传感器故障情况，并map到0-100
+  delay(10);
+  Mud2_value =MoisureDataClean(Mud2);
+  delay(10);
+  Mud3_value =MoisureDataClean(Mud3);
+  delay(10);
+
+Blynk.virtualWrite(V11, Mud1_value);
+Blynk.virtualWrite(V12, Mud2_value);
+Blynk.virtualWrite(V13, Mud3_value);
+Blynk.virtualWrite(V20, duration);
+
+
+
+Serial.print("Duration=");
+Serial.println(duration);
+  
   h = dht.readHumidity();
   t = dht.readTemperature(); 
   if (isnan(h) || isnan(t)) {
@@ -271,6 +335,7 @@ if(remote == 0){
 
   //u8g2.clearBuffer();
   strcpy(str, u8x8_u16toa(val, 5));  
+      Serial.println("光照（Lux）：");
     Serial.println(str);
   u8g2.firstPage();
   do {
@@ -311,9 +376,9 @@ if(remote == 0){
 //-------------line3--------------
   u8g2.setCursor(0, 45);
   u8g2.print("光照:");
-  u8g2.setCursor(40, 45);
+  u8g2.setCursor(30, 45);
   u8g2.print(val);   
-  u8g2.setCursor(70, 45);
+  u8g2.setCursor(65, 45);
   u8g2.print("Lux");
   u8g2.setCursor(100, 45);
   u8g2.print(remote);
@@ -343,4 +408,8 @@ if(remote == 0){
 
    Serial.printf("远程开泵=%d\n",incomedate);
    Serial.printf("远程模式或本地模式=%d\n",remote);
-}
+  
+  
+  
+  
+  }
