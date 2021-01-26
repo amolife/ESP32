@@ -38,6 +38,10 @@ int Mud3_value;
 //https://blog.csdn.net/weixin_41866783/article/details/109292153
 int lowlimit = 1200;
 int highlimit = 3800;
+
+int lowrange = 1600;
+int highrange = 3500;
+
 //int lowlimit = 310;
 //int highlimit = 560;
 const int sampleCount = 10;
@@ -55,7 +59,7 @@ int remote = 0;
 int incomedate = 0;
 int relayPin = 13;
 
-int duration = 20; //假设多少秒，，以后改为小时
+int duration = 24; //假设多少秒，，以后改为小时
 
 
 //bool  isWatered = false;    //一段时间内最多浇一次水,防止因为传感器损坏而过浇
@@ -76,7 +80,7 @@ BlynkTimer timer;
 void setup() {
   Serial.begin(115200);
   Blynk.begin(auth, ssid, pass);
-  timer.setInterval((long)duration*1000, PumpToDo);
+  timer.setInterval((long)duration*1000*60, PumpToDo);
   timer.setInterval(5000L, UpdateData);
   pinMode(relayPin, OUTPUT);
   pinMode(Mud1, INPUT);
@@ -103,6 +107,8 @@ void setup() {
   // Turn OFF all pixels ASAP
   strip.setBrightness(100);
   // Set BRIGHTNESS to about 1/5 (max = 255)
+  rainbow(10);
+
 }
 //********************************
 void loop() {
@@ -128,17 +134,17 @@ int MoisureDataClean(int raw_pin) {
   //https://blog.csdn.net/weixin_41866783/article/details/109292153
   if (raw >= highlimit) {
      Serial.print("\n");
-    Serial.println("数据异常！平均值超过3600了，传感器故障");
+    Serial.printf("数据异常！平均值超过 %d 传感器故障, 平均值是：",highlimit);
      Serial.print(raw);
     return NULL;
   }
   if (raw <= lowlimit) {
      Serial.print("\n");
-    Serial.println("数据异常！平均值低于1250了，传感器故障");
+    Serial.printf("数据异常！平均值低于 %d 传感器故障平均值是：",lowlimit);
          Serial.print(raw);
     return NULL;
   } else {
-    raw = map(raw, highlimit, lowlimit, 0, 100);
+    raw = map(raw, highrange, lowrange, 0, 100);
      Serial.print("\n");
     Serial.printf("MudValueCleanTo_0_100=%d\n",raw);
     return raw;}
@@ -352,13 +358,13 @@ Serial.println(duration);
 //  u8g2.print("②:");
 //  u8g2.setCursor(80, 13);
   u8g2.print(Mud2_value);   
-  u8g2.setCursor(85, 13);
+  u8g2.setCursor(90, 13);
   u8g2.print("%");
   u8g2.setCursor(100, 13);
 //  u8g2.print("③:");
 //  u8g2.setCursor(120, 13);
   u8g2.print(Mud3_value);   
-  u8g2.setCursor(115, 13);
+  u8g2.setCursor(120, 13);
   u8g2.print("%");
 //-------------line2--------------
   u8g2.setCursor(0, 29);
@@ -386,10 +392,12 @@ Serial.println(duration);
   u8g2.print(incomedate);
 //-------------line4--------------
   u8g2.setCursor(0, 61);
-  u8g2.print("IP地址:");
-  u8g2.setCursor(40, 61);
+  u8g2.print("IP:");
+  u8g2.setCursor(20, 61);
   u8g2.print(WiFi.localIP());
 //  u8g2.sendBuffer();
+  u8g2.setCursor(110, 61);
+  u8g2.print(duration);
      
   u8g2.setContrast(255 - map(val, 0, 65535, 0, 255)); //将光照数据进行区间映射，控制OLED背光
      
@@ -408,8 +416,85 @@ Serial.println(duration);
 
    Serial.printf("远程开泵=%d\n",incomedate);
    Serial.printf("远程模式或本地模式=%d\n",remote);
-  
-  
-  
+
+Led();
   
   }
+
+void Led(){
+
+int sum=0;
+int avr=0;
+sum = Mud1_value + (Mud2_value + Mud3_value);
+avr = sum / 3;
+Serial.print("3个传感器平均值");
+Serial.print(avr);
+strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+//  strip.show();            // Turn OFF all pixels ASAP
+
+if(avr <= 12){
+  for(int i=0; i<1; i++) {
+  strip.setPixelColor(i, strip.Color(255,   0,   0)); 
+  for(int j=1; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >12 && avr <= 25){
+  for(int i=0; i<2; i++) {
+  strip.setPixelColor(i, strip.Color(255,   0,   0)); 
+    for(int j=2; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >25 && avr <= 37){
+  for(int i=0; i<3; i++) {
+  strip.setPixelColor(i, strip.Color(0,   255,   0)); 
+    for(int j=3; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >37 && avr <= 50){
+  for(int i=0; i<4; i++) {
+  strip.setPixelColor(i, strip.Color(0,   255,   0)); 
+    for(int j=4; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >50 && avr <= 62){
+  for(int i=0; i<5; i++) {
+  strip.setPixelColor(i, strip.Color(0,   255,   0)); 
+    for(int j=5; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >62 && avr <= 75){
+  for(int i=0; i<6; i++) {
+  strip.setPixelColor(i, strip.Color(0,   255,   0)); 
+    for(int j=6; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >75 && avr <= 87){
+  for(int i=0; i<7; i++) {
+  strip.setPixelColor(i, strip.Color(0,   0,   255)); 
+    for(int j=7; j<8; j++) {
+      strip.setPixelColor(j, strip.Color(0,   0,   0)); 
+  }
+  strip.show();}
+}
+else if(avr >87 && avr <= 100){
+  for(int i=0; i<8; i++) {
+  strip.setPixelColor(i, strip.Color(0,   0,   255)); 
+ 
+  strip.show();}
+}
+
+//strip.show();
+
+}
