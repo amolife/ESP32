@@ -28,9 +28,12 @@ void loop() {
         if(newState == LOW) {      // Yes, still low
         Serial.println("Sending 'Password'...");
         bleKeyboard.print("Shiyishu2020!");
+        delay(1000);
+        bleKeyboard.releaseAll();
       // Set the last-read button state to the old state.
       }
      }
   }
   oldState = newState;
+  delay(20);
 }
